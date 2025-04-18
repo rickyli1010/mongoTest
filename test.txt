@@ -1,0 +1,44 @@
+[
+  {
+    $addFields: {
+      urlLocale: {
+        $let: {
+          vars: {
+            matchObj: {
+              $regexFind: {
+                input: "$url",
+                regex: "([a-z]{2}-[a-z]{2})(?=/|$)",
+                options: "i"
+              }
+            }
+          },
+          in: {
+            $cond: [
+              { $ifNull: ["$$matchObj", false] },
+              "$$matchObj.match",
+              null
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    $match: {
+      $expr: {
+        $and: [
+          { $ne: ["$urlLocale", null] },
+          { $ne: ["$urlLocale", "$locale"] }
+        ]
+      }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      url: 1,
+      locale: 1,
+      urlLocale: 1
+    }
+  }
+]
